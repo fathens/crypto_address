@@ -1,0 +1,52 @@
+name: Manual Deploy
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+          default: true
+
+      - uses: Swatinem/rust-cache@v1
+
+      - name: Install cargo-make
+        run: cargo install cargo-make
+
+      - name: Build wasm
+        uses: actions-rs/cargo@v1
+        with:
+          command: make
+          args: --profile production bind-wasm
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: docs
+          path: docs
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v2
+
+      - name: Push artifacts
+        run: |
+          ls -la docs/
+          git config --global user.name 'Manual Deploy'
+          git config --global user.email ''
+          git add -f docs/*
+          git commit -m 'Add WASM and JS'
+          ch=$(git rev-parse --verify HEAD)
+          git fetch
+          git checkout -t origin/gh-pages
+          git reset --hard $ch
+          git push -f
