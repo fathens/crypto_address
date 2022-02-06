@@ -1,0 +1,41 @@
+[env]
+ENV_DIR = {source="${CARGO_MAKE_PROFILE}", default_value = "debug", mapping = {production = "release"}}
+CARGO_TARGET_DIR = {value = "target", condition = {env_not_set = ["CARGO_TARGET_DIR"]}}
+CARGO_WASM_PATH = "${CARGO_TARGET_DIR}/wasm32-unknown-unknown/${ENV_DIR}/viewer.wasm"
+WASM_ROOT_DIR="docs"
+
+[env.production]
+CARGO_RELEASE_ARGS = "--release"
+
+[config]
+default_to_workspace = false
+
+[tasks.bind-wasm]
+command = "./bin/wasm-bindgen"
+args = ["--out-dir", "${WASM_ROOT_DIR}", "--out-name", "wasm", "--target", "web", "--no-typescript", "${CARGO_WASM_PATH}"]
+dependencies = ["build", "wasm-bindgen-cli"]
+
+[tasks.build]
+command = "cargo"
+args = ["build", "@@split(CARGO_RELEASE_ARGS, )"]
+dependencies = ["target-wasm32"]
+
+[tasks.target-wasm32]
+command = "rustup"
+args = ["target", "install", "wasm32-unknown-unknown"]
+
+[tasks.wasm-bindgen-cli]
+command = "cargo"
+args = ["local-install", "wasm-bindgen-cli", "--locked", "--version", "0.2.79"]
+dependencies = ["cargo-local-install"]
+
+[tasks.cargo-local-install]
+install_crate = {crate_name = "cargo-local-install", binary = "cargo-wasm-bindgen", test_arg="--help"}
+
+[tasks.basic-http-server]
+install_crate = {crate_name = "basic-http-server", binary = "basic-http-server", test_arg="--help"}
+
+[tasks.serve]
+command = "basic-http-server"
+args = ["-x", "-a", "0.0.0.0:4000", "${WASM_ROOT_DIR}"]
+dependencies = ["bind-wasm", "basic-http-server"]
