@@ -1,0 +1,29 @@
+[package]
+name = "viewer"
+version = "0.0.1"
+edition = "2021"
+
+[dependencies]
+tinyvec = "~1.5"
+
+[dependencies.bevy]
+version = "0.6"
+default-features = false
+features = [
+  "bevy_gltf",
+  "bevy_winit",
+  "render",
+  "png"
+]
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies.bevy]
+version = "0.6"
+default-features = false
+features = ["x11"]
+
+[profile.dev]
+opt-level = 2
+
+[profile.release]
+lto = true
+opt-level = 'z'
