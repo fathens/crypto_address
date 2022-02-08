@@ -1,9 +1,9 @@
+use once_cell::sync::Lazy;
 use rust_embed::RustEmbed;
 use std::{
     borrow::Cow,
     io::{Error, ErrorKind, Result},
 };
-use once_cell::sync::Lazy;
 
 static WORDS_2048: Lazy<Vec<String>> = Lazy::new(|| read_words().unwrap());
 
@@ -25,17 +25,19 @@ fn read_words() -> Result<Vec<String>> {
         })
 }
 
-pub fn convert_to_num<'a>(mnemonic: Vec<&str>) -> Result<Vec<u16>> {
-        let init_vs: Vec<u16> = Vec::with_capacity(mnemonic.len());
-        mnemonic.into_iter().fold(Result::Ok(init_vs), |prev, w| {
-            prev.and_then(|mut vs| {
-                WORDS_2048.iter().position(|s| s.eq_ignore_ascii_case(w)).map(|i| i as u16)
-                    .map(|i| {
-                        vs.push(i);
-                        vs
-                    })
-                    .ok_or(Error::from(ErrorKind::InvalidInput))
-            })
+pub fn convert_to_num(mnemonic: Vec<&str>) -> Result<Vec<u16>> {
+    let init_vs: Vec<u16> = Vec::with_capacity(mnemonic.len());
+    mnemonic.into_iter().fold(Result::Ok(init_vs), |prev, w| {
+        prev.and_then(|mut vs| {
+            WORDS_2048
+                .iter()
+                .position(|s| s.eq_ignore_ascii_case(w))
+                .map(|i| {
+                    vs.push(i as u16);
+                    vs
+                })
+                .ok_or(Error::from(ErrorKind::InvalidInput))
+        })
     })
 }
 
@@ -51,9 +53,10 @@ mod test {
     #[test]
     fn check_word_indeces() {
         let expected_indeces = vec![0u16, 3, 108, 2047];
-        let samples = expected_indeces.iter().map(|&i| {
-            &WORDS_2048[i as usize][..]
-        }).collect();
+        let samples = expected_indeces
+            .iter()
+            .map(|&i| &WORDS_2048[i as usize][..])
+            .collect();
         let actual_indexes = convert_to_num(samples).unwrap();
         assert_eq!(expected_indeces, actual_indexes);
     }
@@ -61,9 +64,10 @@ mod test {
     #[test]
     fn check_word_indeces_ignorecase() {
         let expected_indeces = vec![0u16, 23, 1085, 2047];
-        let originals: Vec<_> = expected_indeces.iter().map(|&i| {
-            WORDS_2048[i as usize].to_uppercase()
-        }).collect();
+        let originals: Vec<_> = expected_indeces
+            .iter()
+            .map(|&i| WORDS_2048[i as usize].to_uppercase())
+            .collect();
         let samples = originals.iter().map(|s| &s[..]).collect();
         let actual_indexes = convert_to_num(samples).unwrap();
         assert_eq!(expected_indeces, actual_indexes);
