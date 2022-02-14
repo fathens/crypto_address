@@ -25,20 +25,17 @@ fn read_words() -> Result<Vec<String>> {
         })
 }
 
-pub fn convert_to_num(mnemonic: Vec<&str>) -> Result<Vec<u16>> {
-    let init_vs: Vec<u16> = Vec::with_capacity(mnemonic.len());
-    mnemonic.into_iter().fold(Result::Ok(init_vs), |prev, w| {
-        prev.and_then(|mut vs| {
+pub fn convert_to_num(mnemonic: &Vec<&str>) -> Result<Vec<u16>> {
+    mnemonic
+        .into_iter()
+        .map(|w| {
             WORDS_2048
                 .iter()
                 .position(|s| s.eq_ignore_ascii_case(w))
-                .map(|i| {
-                    vs.push(i as u16);
-                    vs
-                })
-                .ok_or(Error::from(ErrorKind::InvalidInput))
+                .map(|i| i as u16)
+                .ok_or(Error::new(ErrorKind::InvalidInput, "Unknown word"))
         })
-    })
+        .collect()
 }
 
 #[cfg(test)]
@@ -57,7 +54,7 @@ mod test {
             .iter()
             .map(|&i| &WORDS_2048[i as usize][..])
             .collect();
-        let actual_indexes = convert_to_num(samples).unwrap();
+        let actual_indexes = convert_to_num(&samples).unwrap();
         assert_eq!(expected_indeces, actual_indexes);
     }
 
@@ -69,7 +66,7 @@ mod test {
             .map(|&i| WORDS_2048[i as usize].to_uppercase())
             .collect();
         let samples = originals.iter().map(|s| &s[..]).collect();
-        let actual_indexes = convert_to_num(samples).unwrap();
+        let actual_indexes = convert_to_num(&samples).unwrap();
         assert_eq!(expected_indeces, actual_indexes);
     }
 }
