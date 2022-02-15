@@ -25,7 +25,7 @@ fn read_words() -> Result<Vec<String>> {
         })
 }
 
-pub fn convert_to_num(mnemonic: &Vec<&str>) -> Result<Vec<u16>> {
+pub fn convert_to_nums(mnemonic: &Vec<&str>) -> Result<Vec<u16>> {
     mnemonic
         .into_iter()
         .map(|w| {
@@ -36,6 +36,13 @@ pub fn convert_to_num(mnemonic: &Vec<&str>) -> Result<Vec<u16>> {
                 .ok_or(Error::new(ErrorKind::InvalidInput, "Unknown word"))
         })
         .collect()
+}
+
+pub fn get_word(index: usize) -> Result<&'static str> {
+    WORDS_2048
+        .get(index)
+        .map(|s| &s[..])
+        .ok_or_else(|| Error::new(ErrorKind::InvalidInput, "Out of index"))
 }
 
 #[cfg(test)]
@@ -54,7 +61,7 @@ mod test {
             .iter()
             .map(|&i| &WORDS_2048[i as usize][..])
             .collect();
-        let actual_indexes = convert_to_num(&samples).unwrap();
+        let actual_indexes = convert_to_nums(&samples).unwrap();
         assert_eq!(expected_indeces, actual_indexes);
     }
 
@@ -66,7 +73,7 @@ mod test {
             .map(|&i| WORDS_2048[i as usize].to_uppercase())
             .collect();
         let samples = originals.iter().map(|s| &s[..]).collect();
-        let actual_indexes = convert_to_num(&samples).unwrap();
+        let actual_indexes = convert_to_nums(&samples).unwrap();
         assert_eq!(expected_indeces, actual_indexes);
     }
 }
