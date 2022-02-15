@@ -49,7 +49,11 @@ fn validate(mnemonic: &Vec<&str>) -> Result<()> {
     }
 }
 
-pub fn to_seed(mnemonic: &Vec<&str>, salt: &str) -> Result<Bytes> {
+pub fn to_seed(mnemonic: &Vec<&str>) -> Result<Bytes> {
+    to_seed_with_salt(mnemonic, "")
+}
+
+pub fn to_seed_with_salt(mnemonic: &Vec<&str>, salt: &str) -> Result<Bytes> {
     validate(mnemonic)?;
 
     let mut result = vec![0; 64];
@@ -79,7 +83,7 @@ mod test {
             "reveal", "cool", "excite", "noise", "stand", "hood",
         ];
         let expected_seed = decode_hex("7ec22a3b2a5380aec912b336b89fed7d595cb21e66ba08d99c8012f2bdb1d988d32fd158ee0b8a57f4a4d97e6e34546e1ae7f89ed1ac6dfac2ea312ca93232de").unwrap();
-        let actual_seed = to_seed(&mnemonic, "").unwrap();
+        let actual_seed = to_seed(&mnemonic).unwrap();
         assert_eq!(expected_seed, actual_seed);
     }
 
@@ -90,7 +94,7 @@ mod test {
             "squeeze", "denial", "day",
         ];
         let expected_seed = decode_hex("00e93e7f34b53297cfa9bebffb48bac5e0fe6f79eb88598ea61881d3bde1e50125e56a8bbe6d333be3bf2be8309e2137977c9ac22c3a15ce0212fe26bfbc4b6d").unwrap();
-        let actual_seed = to_seed(&mnemonic, "").unwrap();
+        let actual_seed = to_seed(&mnemonic).unwrap();
         assert_eq!(expected_seed, actual_seed);
     }
 
