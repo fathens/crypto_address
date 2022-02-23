@@ -14,6 +14,8 @@ use std::{
 };
 use unicode_normalization::UnicodeNormalization;
 
+const EACH_BITS: usize = 11;
+
 fn mk_mask(size: usize) -> BigUint {
     BigUint::from(1_u8).shl(size).sub(1_u8)
 }
@@ -35,7 +37,7 @@ fn validate(mnemonic: &Vec<&str>) -> Result<()> {
     let len_target = length + len_cbits;
 
     let nums = convert_to_nums(mnemonic)?;
-    let value: BigUint = nums.iter().fold(0_u8.into(), |n, v| n.shl(11_u8) + v);
+    let value: BigUint = nums.iter().fold(0_u8.into(), |n, v| n.shl(EACH_BITS) + v);
 
     let expected_checksum = value.clone().bitand(mk_mask(len_cbits));
     let actual_checksum = {
@@ -58,11 +60,11 @@ pub fn to_mnemonic(bs: Bytes) -> Result<Vec<&'static str>> {
     let len_origin = bs.len() * 8;
     let len_cbits = len_origin / 32;
     let len_total = len_origin + len_cbits;
-    let num_words = len_total / 11;
-    if len_cbits < 4 || (num_words * 11) != len_total {
+    let num_words = len_total / EACH_BITS;
+    if len_cbits < 4 || (num_words * EACH_BITS) != len_total {
         return Result::Err(Error::new(ErrorKind::InvalidInput, "Wrong length of bits"));
     }
-    let mask = mk_mask(11);
+    let mask = mk_mask(EACH_BITS);
     let mut bignum = BigUint::from_bytes_be(bs.as_ref())
         .shl(len_cbits)
         .add(checksum(bs.as_ref(), len_cbits));
@@ -75,7 +77,7 @@ pub fn to_mnemonic(bs: Bytes) -> Result<Vec<&'static str>> {
             .expect("Mask must be smaller than u16");
         let word = get_word(index as usize)?;
         result.insert(0, word);
-        bignum.shr_assign(11);
+        bignum.shr_assign(EACH_BITS);
     }
     Result::Ok(result)
 }
