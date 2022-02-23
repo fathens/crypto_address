@@ -1,5 +1,6 @@
 use crate::words::get_word;
 
+use unicode_normalization::UnicodeNormalization;
 use super::words::convert_to_nums;
 use bytes::Bytes;
 use hmac::Hmac;
@@ -90,7 +91,7 @@ pub fn to_seed_with_salt(mnemonic: &Vec<&str>, salt: &str) -> Result<Bytes> {
 
     pbkdf2::<Hmac<Sha512>>(
         mnemonic.join(" ").as_bytes(),
-        ("mnemonic".to_string() + salt).as_bytes(),
+        format!("mnemonic{salt}").nfkd().to_string().as_bytes(),
         2048,
         &mut result,
     );
