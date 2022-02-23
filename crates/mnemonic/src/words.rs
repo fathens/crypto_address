@@ -13,27 +13,27 @@ struct Words;
 
 fn read_words() -> Result<Vec<String>> {
     Words::get("english.txt")
-        .ok_or(Error::from(ErrorKind::NotFound))
+        .ok_or_else(|| Error::from(ErrorKind::NotFound))
         .and_then(|file| {
             let bytes = match file.data {
                 Cow::Borrowed(bs) => bs.into(),
                 Cow::Owned(bs) => bs,
             };
             std::str::from_utf8(bytes.as_ref())
-                .map(|ss| ss.split("\n").map(|s| s.to_string()).collect())
+                .map(|ss| ss.split('\n').map(|s| s.to_string()).collect())
                 .map_err(|err| Error::new(ErrorKind::InvalidInput, err))
         })
 }
 
 pub fn convert_to_nums(mnemonic: &Vec<&str>) -> Result<Vec<u16>> {
     mnemonic
-        .into_iter()
+        .iter()
         .map(|w| {
             WORDS_2048
                 .iter()
                 .position(|s| s.eq_ignore_ascii_case(w))
                 .map(|i| i as u16)
-                .ok_or(Error::new(ErrorKind::InvalidInput, "Unknown word"))
+                .ok_or_else(|| Error::new(ErrorKind::InvalidInput, "Unknown word"))
         })
         .collect()
 }
