@@ -17,7 +17,7 @@ dependencies = ["build", "wasm-bindgen-cli"]
 
 [tasks.build]
 command = "cargo"
-args = ["build", "@@split(CARGO_RELEASE_ARGS, )"]
+args = ["build", "--target", "wasm32-unknown-unknown", "@@split(CARGO_RELEASE_ARGS, )"]
 dependencies = ["target-wasm32"]
 
 [tasks.target-wasm32]
