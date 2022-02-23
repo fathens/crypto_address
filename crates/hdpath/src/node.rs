@@ -3,7 +3,7 @@ use std::str::FromStr;
 const ROOT_CHAR: &'static str = "m";
 const SIGN_HARDENED: u32 = 1 << 31;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Node {
     Root,
     Normal(u32),
