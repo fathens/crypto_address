@@ -28,7 +28,7 @@ fn checksum(bs: &[u8], len_cbits: usize) -> BigUint {
     num.shr(256 - len_cbits)
 }
 
-fn validate(mnemonic: &Vec<&str>) -> Result<()> {
+fn validate(mnemonic: &[&str]) -> Result<()> {
     let length = mnemonic.len();
     if length < 12 || length % 3 != 0 {
         return Result::Err(Error::new(ErrorKind::InvalidInput, "Wrong length of words"));
@@ -82,11 +82,11 @@ pub fn to_mnemonic(bs: Bytes) -> Result<Vec<&'static str>> {
     Result::Ok(result)
 }
 
-pub fn to_seed(mnemonic: &Vec<&str>) -> Result<Bytes> {
+pub fn to_seed(mnemonic: &[&str]) -> Result<Bytes> {
     to_seed_with_salt(mnemonic, "")
 }
 
-pub fn to_seed_with_salt(mnemonic: &Vec<&str>, salt: &str) -> Result<Bytes> {
+pub fn to_seed_with_salt(mnemonic: &[&str], salt: &str) -> Result<Bytes> {
     validate(mnemonic)?;
 
     let mut result = vec![0; 64];

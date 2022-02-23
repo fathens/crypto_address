@@ -25,7 +25,7 @@ fn read_words() -> Result<Vec<String>> {
         })
 }
 
-pub fn convert_to_nums(mnemonic: &Vec<&str>) -> Result<Vec<u16>> {
+pub fn convert_to_nums(mnemonic: &[&str]) -> Result<Vec<u16>> {
     mnemonic
         .iter()
         .map(|w| {
@@ -57,7 +57,7 @@ mod test {
     #[test]
     fn check_word_indeces() {
         let expected_indeces = vec![0u16, 3, 108, 2047];
-        let samples = expected_indeces
+        let samples: Vec<_> = expected_indeces
             .iter()
             .map(|&i| &WORDS_2048[i as usize][..])
             .collect();
@@ -72,7 +72,7 @@ mod test {
             .iter()
             .map(|&i| WORDS_2048[i as usize].to_uppercase())
             .collect();
-        let samples = originals.iter().map(|s| &s[..]).collect();
+        let samples: Vec<_> = originals.iter().map(|s| &s[..]).collect();
         let actual_indexes = convert_to_nums(&samples).unwrap();
         assert_eq!(expected_indeces, actual_indexes);
     }
