@@ -1,9 +1,11 @@
 use std::str::FromStr;
 
+const ROOT_CHAR: &'static str = "m";
 const SIGN_HARDENED: u32 = 1 << 31;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Node {
+    Root,
     Normal(u32),
     Hardened(u32),
 }
@@ -22,6 +24,9 @@ impl FromStr for Node {
     type Err = core::num::ParseIntError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s == ROOT_CHAR {
+            return Ok(Node::Root);
+        }
         let (num_str, sign) = match s.strip_suffix("'") {
             Some(a) => (a, SIGN_HARDENED),
             None => (s, 0),
@@ -66,5 +71,12 @@ mod test {
         assert_eq!(Node::Hardened(9), "9'".parse().unwrap());
         assert_eq!(Node::Hardened(0), "0'".parse().unwrap());
         assert_eq!(Node::Hardened(123), "123'".parse().unwrap());
+    }
+
+    #[test]
+    fn root_from_str() {
+        assert_eq!(Some(Node::Root), "m".parse().ok());
+        assert_eq!(None, "mm".parse::<Node>().ok());
+        assert_eq!(None, "k".parse::<Node>().ok());
     }
 }
