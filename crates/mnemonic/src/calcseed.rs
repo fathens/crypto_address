@@ -1,6 +1,5 @@
 use crate::words::get_word;
 
-use unicode_normalization::UnicodeNormalization;
 use super::words::convert_to_nums;
 use bytes::Bytes;
 use hmac::Hmac;
@@ -13,6 +12,7 @@ use std::{
     ops::{Add, BitAnd, Shl, ShrAssign},
     ops::{Shr, Sub},
 };
+use unicode_normalization::UnicodeNormalization;
 
 fn mk_mask(size: usize) -> BigUint {
     BigUint::from(1_u8).shl(size).sub(1_u8)
@@ -141,7 +141,8 @@ mod test {
     }
 
     use once_cell::sync::Lazy;
-    static VECTORS: Lazy<Vec<Sample>> = Lazy::new(|| vec![
+    static VECTORS: Lazy<Vec<Sample>> = Lazy::new(|| {
+        vec![
         // https://github.com/trezor/python-mnemonic/blob/b502451a33a440783926e04428115e0bed87d01f/vectors.json
         Sample {
             entropy: "00000000000000000000000000000000",
@@ -263,5 +264,6 @@ mod test {
             mnemonic: "void come effort suffer camp survey warrior heavy shoot primary clutch crush open amazing screen patrol group space point ten exist slush involve unfold",
             seed: "01f5bced59dec48e362f2c45b5de68b9fd6c92c6634f44d6d40aab69056506f0e35524a518034ddc1192e1dacd32c1ed3eaa3c3b131c88ed8e7e54c49a5d0998",
         }
-    ]);
+    ]
+    });
 }

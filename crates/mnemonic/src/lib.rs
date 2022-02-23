@@ -1,2 +1,2 @@
-pub mod words;
 pub mod calcseed;
+pub mod words;
