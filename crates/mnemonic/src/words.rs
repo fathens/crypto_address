@@ -20,7 +20,7 @@ fn read_words() -> Result<Vec<String>> {
                 Cow::Owned(bs) => bs,
             };
             std::str::from_utf8(bytes.as_ref())
-                .map(|ss| ss.split('\n').map(|s| s.to_string()).collect())
+                .map(|ss| ss.lines().map(|s| s.to_string()).collect())
                 .map_err(|err| Error::new(ErrorKind::InvalidInput, err))
         })
 }
