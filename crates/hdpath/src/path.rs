@@ -16,7 +16,9 @@ impl std::fmt::Display for HDPathError {
 
 impl From<<Node as FromStr>::Err> for HDPathError {
     fn from(src: <Node as FromStr>::Err) -> Self {
-        Self { reason: src.to_string() }
+        Self {
+            reason: src.to_string(),
+        }
     }
 }
 
@@ -34,15 +36,21 @@ impl TryFrom<Vec<Node>> for HDPath {
 
     fn try_from(ps: Vec<Node>) -> Result<Self, Self::Error> {
         if ps.is_empty() {
-            return Err(HDPathError { reason: "empty path".to_owned() });
+            return Err(HDPathError {
+                reason: "empty path".to_owned(),
+            });
         }
         if contains_root(&ps[1..]) {
-            return Err(HDPathError { reason: "invalid position of root path".to_owned() });
+            return Err(HDPathError {
+                reason: "invalid position of root path".to_owned(),
+            });
         }
         if starts_root(&ps) {
             return Ok(HDPath(ps));
         }
-        return Err(HDPathError { reason: "invalid path".to_owned() });
+        return Err(HDPathError {
+            reason: "invalid path".to_owned(),
+        });
     }
 }
 
@@ -51,7 +59,9 @@ impl FromStr for HDPath {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.starts_with(PATH_SEPARATOR) || s.ends_with(PATH_SEPARATOR) {
-            return Err(HDPathError { reason: "invalid path".to_owned() });
+            return Err(HDPathError {
+                reason: "invalid path".to_owned(),
+            });
         }
         let ps = split(s)?;
         ps.try_into()
@@ -59,7 +69,10 @@ impl FromStr for HDPath {
 }
 
 fn split(s: &str) -> Result<Vec<Node>, <Node as FromStr>::Err> {
-    s.split(PATH_SEPARATOR).into_iter().map(Node::from_str).collect()
+    s.split(PATH_SEPARATOR)
+        .into_iter()
+        .map(Node::from_str)
+        .collect()
 }
 
 fn starts_root(ps: &[Node]) -> bool {
