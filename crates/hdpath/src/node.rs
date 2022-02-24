@@ -1,6 +1,7 @@
 use std::str::FromStr;
 
-const ROOT_CHAR: &'static str = "m";
+const ROOT_CHAR: char = 'm';
+const HARDENED_CHAR: char = '\'';
 const SIGN_HARDENED: u32 = 1 << 31;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -33,10 +34,12 @@ impl FromStr for Node {
     type Err = core::num::ParseIntError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s == ROOT_CHAR {
-            return Ok(Node::Root);
+        if let Some(m) = s.chars().next() {
+            if s.len() == 1 && m == ROOT_CHAR {
+                return Ok(Node::Root);
+            }
         }
-        let (num_str, sign) = match s.strip_suffix("'") {
+        let (num_str, sign) = match s.strip_suffix(HARDENED_CHAR) {
             Some(a) => (a, SIGN_HARDENED),
             None => (s, 0),
         };
