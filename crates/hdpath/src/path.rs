@@ -4,6 +4,7 @@ use crate::node::Node;
 
 const PATH_SEPARATOR: char = '/';
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct HDPathError {
     reason: String,
 }
@@ -22,6 +23,7 @@ impl From<<Node as FromStr>::Err> for HDPathError {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct HDPath(Vec<Node>);
 
 impl HDPath {
@@ -84,4 +86,93 @@ fn starts_root(ps: &[Node]) -> bool {
 
 fn contains_root(ps: &[Node]) -> bool {
     ps.contains(&Node::Root)
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn from_vec() {
+        let ps1 = vec![
+            Node::Root,
+            Node::from(1),
+            Node::from(2),
+            Node::from(3),
+            Node::from(4),
+        ];
+        assert_eq!(HDPath(ps1.clone()), ps1.try_into().unwrap());
+
+        let ps2 = vec![
+            Node::Root,
+            Node::from(1).to_hardened(),
+            Node::from(2).to_hardened(),
+            Node::from(3),
+        ];
+        assert_eq!(HDPath(ps2.clone()), ps2.try_into().unwrap());
+
+        assert_eq!(
+            None as Option<HDPath>,
+            vec![
+                Node::from(1),
+                Node::from(2),
+                Node::from(3),
+                Node::from(4),
+                Node::from(5)
+            ]
+            .try_into()
+            .ok()
+        );
+
+        assert_eq!(
+            None as Option<HDPath>,
+            vec![
+                Node::from(1),
+                Node::Root,
+                Node::from(2),
+                Node::from(3),
+                Node::from(4),
+            ]
+            .try_into()
+            .ok()
+        );
+
+        assert_eq!(
+            None as Option<HDPath>,
+            vec![
+                Node::Root,
+                Node::from(1),
+                Node::Root,
+                Node::from(2),
+                Node::from(3),
+            ]
+            .try_into()
+            .ok()
+        );
+    }
+
+    #[test]
+    fn parse_str() {
+        let ps1 = vec![
+            Node::Root,
+            Node::from(1),
+            Node::from(2),
+            Node::from(3),
+            Node::from(4),
+        ];
+        assert_eq!(HDPath(ps1), "m/1/2/3/4".parse().unwrap());
+
+        let ps2 = vec![
+            Node::Root,
+            Node::from(1).to_hardened(),
+            Node::from(2).to_hardened(),
+            Node::from(3),
+        ];
+        assert_eq!(HDPath(ps2), "m/1'/2'/3".parse().unwrap());
+
+        assert_eq!(None as Option<HDPath>, "/m/1/2/3".parse().ok());
+        assert_eq!(None as Option<HDPath>, "m/1/2/3/".parse().ok());
+        assert_eq!(None as Option<HDPath>, "1/m/2/3".parse().ok());
+        assert_eq!(None as Option<HDPath>, "m//1/2/3".parse().ok());
+    }
 }

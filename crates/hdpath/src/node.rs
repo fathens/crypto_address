@@ -10,6 +10,15 @@ pub enum Node {
     Hardened(u32),
 }
 
+impl Node {
+    pub fn to_hardened(&self) -> Self {
+        match self {
+            Node::Normal(index) => Node::Hardened(*index),
+            _ => *self,
+        }
+    }
+}
+
 impl From<u32> for Node {
     fn from(a: u32) -> Self {
         if (a & SIGN_HARDENED) == 0 {
