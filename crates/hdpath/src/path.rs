@@ -78,10 +78,7 @@ fn split(s: &str) -> Result<Vec<Node>, <Node as FromStr>::Err> {
 }
 
 fn starts_root(ps: &[Node]) -> bool {
-    match ps.get(0) {
-        Some(&Node::Root) => true,
-        _ => false,
-    }
+    matches!(ps.get(0), Some(&Node::Root))
 }
 
 fn contains_root(ps: &[Node]) -> bool {
