@@ -50,9 +50,9 @@ impl TryFrom<Vec<Node>> for HDPath {
         if starts_root(&ps) {
             return Ok(HDPath(ps));
         }
-        return Err(HDPathError {
+        Err(HDPathError {
             reason: "invalid path".to_owned(),
-        });
+        })
     }
 }
 
