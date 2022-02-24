@@ -41,7 +41,7 @@ pub fn convert_to_nums(mnemonic: &[&str]) -> Result<Vec<u16>> {
 pub fn get_word(index: usize) -> Result<&'static str> {
     WORDS_2048
         .get(index)
-        .map(|s| &s[..])
+        .map(|s| s.as_str())
         .ok_or_else(|| Error::new(ErrorKind::InvalidInput, "Out of index"))
 }
 
@@ -59,7 +59,7 @@ mod test {
         let expected_indeces = vec![0u16, 3, 108, 2047];
         let samples: Vec<_> = expected_indeces
             .iter()
-            .map(|&i| &WORDS_2048[i as usize][..])
+            .map(|&i| WORDS_2048[i as usize].as_str())
             .collect();
         let actual_indexes = convert_to_nums(&samples).unwrap();
         assert_eq!(expected_indeces, actual_indexes);
@@ -72,7 +72,7 @@ mod test {
             .iter()
             .map(|&i| WORDS_2048[i as usize].to_uppercase())
             .collect();
-        let samples: Vec<_> = originals.iter().map(|s| &s[..]).collect();
+        let samples: Vec<_> = originals.iter().map(|s| s.as_str()).collect();
         let actual_indexes = convert_to_nums(&samples).unwrap();
         assert_eq!(expected_indeces, actual_indexes);
     }
