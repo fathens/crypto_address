@@ -1383,6 +1383,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "hdpath"
+version = "0.0.1"
+dependencies = [
+ "bytes",
+ "derive-new",
+ "derive_more",
+ "getset",
+ "num-bigint",
+ "num-traits",
+ "tinyvec",
+]
+
+[[package]]
 name = "hermit-abi"
 version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"

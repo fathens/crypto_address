@@ -79,7 +79,7 @@ pub fn to_mnemonic(bs: Bytes) -> Result<Vec<&'static str>> {
         result.insert(0, word);
         bignum.shr_assign(EACH_BITS);
     }
-    Result::Ok(result)
+    Ok(result)
 }
 
 pub fn to_seed(mnemonic: &[&str]) -> Result<Bytes> {
@@ -97,9 +97,7 @@ pub fn to_seed_with_salt(mnemonic: &[&str], salt: &str) -> Result<Bytes> {
         2048,
         &mut result,
     );
-    println!("length = {}", result.len());
-
-    Result::Ok(result.into())
+    Ok(result.into())
 }
 
 #[cfg(test)]
