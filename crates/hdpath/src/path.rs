@@ -2,6 +2,7 @@ use std::str::FromStr;
 
 use crate::node::Node;
 
+const ROOT_CHAR: char = 'm';
 const PATH_SEPARATOR: char = '/';
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -42,17 +43,7 @@ impl TryFrom<Vec<Node>> for HDPath {
                 reason: "empty path".to_owned(),
             });
         }
-        if contains_root(&ps[1..]) {
-            return Err(HDPathError {
-                reason: "invalid position of root path".to_owned(),
-            });
-        }
-        if starts_root(&ps) {
-            return Ok(HDPath(ps));
-        }
-        Err(HDPathError {
-            reason: "invalid path".to_owned(),
-        })
+        Ok(HDPath(ps))
     }
 }
 
@@ -60,13 +51,15 @@ impl FromStr for HDPath {
     type Err = HDPathError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.starts_with(PATH_SEPARATOR) || s.ends_with(PATH_SEPARATOR) {
-            return Err(HDPathError {
-                reason: "invalid path".to_owned(),
-            });
+        if let Some(a) = s.strip_prefix(ROOT_CHAR) {
+            if let Some(b) = a.strip_prefix(PATH_SEPARATOR) {
+                let ps = split(b)?;
+                return ps.try_into();
+            }
         }
-        let ps = split(s)?;
-        ps.try_into()
+        Err(HDPathError {
+            reason: format!("should start with '{ROOT_CHAR}'"),
+        })
     }
 }
 
@@ -77,90 +70,31 @@ fn split(s: &str) -> Result<Vec<Node>, <Node as FromStr>::Err> {
         .collect()
 }
 
-fn starts_root(ps: &[Node]) -> bool {
-    matches!(ps.get(0), Some(&Node::Root))
-}
-
-fn contains_root(ps: &[Node]) -> bool {
-    ps.contains(&Node::Root)
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
 
     #[test]
     fn from_vec() {
-        let ps1 = vec![
-            Node::Root,
-            Node::from(1),
-            Node::from(2),
-            Node::from(3),
-            Node::from(4),
-        ];
+        let ps1 = vec![Node::from(1), Node::from(2), Node::from(3), Node::from(4)];
         assert_eq!(HDPath(ps1.clone()), ps1.try_into().unwrap());
 
         let ps2 = vec![
-            Node::Root,
             Node::from(1).to_hardened(),
             Node::from(2).to_hardened(),
             Node::from(3),
         ];
         assert_eq!(HDPath(ps2.clone()), ps2.try_into().unwrap());
 
-        assert_eq!(
-            None as Option<HDPath>,
-            vec![
-                Node::from(1),
-                Node::from(2),
-                Node::from(3),
-                Node::from(4),
-                Node::from(5)
-            ]
-            .try_into()
-            .ok()
-        );
-
-        assert_eq!(
-            None as Option<HDPath>,
-            vec![
-                Node::from(1),
-                Node::Root,
-                Node::from(2),
-                Node::from(3),
-                Node::from(4),
-            ]
-            .try_into()
-            .ok()
-        );
-
-        assert_eq!(
-            None as Option<HDPath>,
-            vec![
-                Node::Root,
-                Node::from(1),
-                Node::Root,
-                Node::from(2),
-                Node::from(3),
-            ]
-            .try_into()
-            .ok()
-        );
+        assert_eq!(None as Option<HDPath>, vec![].try_into().ok());
     }
 
     #[test]
     fn parse_str() {
-        let ps1 = vec![
-            Node::Root,
-            Node::from(1),
-            Node::from(2),
-            Node::from(3),
-            Node::from(4),
-        ];
+        let ps1 = vec![Node::from(1), Node::from(2), Node::from(3), Node::from(4)];
         assert_eq!(HDPath(ps1), "m/1/2/3/4".parse().unwrap());
 
         let ps2 = vec![
-            Node::Root,
             Node::from(1).to_hardened(),
             Node::from(2).to_hardened(),
             Node::from(3),
