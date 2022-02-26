@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use core::str::FromStr;
 
 const HARDENED_CHAR: char = '\'';
 const SIGN_HARDENED: u32 = 1 << 31;
