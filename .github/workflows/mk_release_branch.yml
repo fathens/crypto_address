@@ -1,4 +1,4 @@
-name: Make Release Branch
+name: Release Branch
 on:
   workflow_dispatch:
     inputs:
@@ -6,11 +6,7 @@ on:
         required: true
       release_from:
         required: true
-        default: "develop"
-
-env:
-    BRANCH_NAME: release/${{ github.event.inputs.version }}
-    FROM: ${{ github.event.inputs.release_from }}
+        default: "origin/develop"
 
 jobs:
   mk_branch:
@@ -22,13 +18,19 @@ jobs:
         run: |
           git config --global user.name 'Make Release Branch'
           git config --global user.email ''
-          git checkout -b ${BRANCH_NAME} ${FROM}
-          git push
+          git fetch
+          git checkout ${FROM}
+          git checkout -b ${BRANCH_NAME}
+          git push -f --set-upstream origin ${BRANCH_NAME}
+        env:
+            BRANCH_NAME: release/${{ github.event.inputs.version }}
+            FROM: ${{ github.event.inputs.release_from }}
+
 
       - name: make pull request
-        uses: bakunyo/git-pr-release-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GIT_PR_RELEASE_BRANCH_PRODUCTION: master
-          GIT_PR_RELEASE_BRANCH_STAGING: ${BRANCH_NAME}
-          GIT_PR_RELEASE_LABELS: ${{ github.event.inputs.version }}
+        uses: repo-sync/pull-request@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          source_branch: release/${{ github.event.inputs.version }}
+          destination_branch: main
+          pr_title: Release ${{ github.event.inputs.version }}

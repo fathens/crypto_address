@@ -1,0 +1,23 @@
+name: Tag Release
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+jobs:
+  push_tag:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: checkout and push
+        run: |
+          VERSION=${BRANCH_NAME#release/}
+          git fetch
+          git tag $VERSION main
+          git push origin $VERSION
+        env:
+            BRANCH_NAME: ${{ github.head_ref }}

@@ -1,0 +1,16 @@
+name: Draft Release
+on:
+  push:
+    tags:
+      - v*.*.*
+
+jobs:
+  draft_release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: make draft release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
