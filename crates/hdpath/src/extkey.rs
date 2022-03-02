@@ -1,5 +1,8 @@
 use crate::node::Node;
+use crypto_bigint::{Encoding, U256};
+use elliptic_curve::{group::GroupEncoding, Curve, NonZeroScalar};
 use hmac::{digest::InvalidLength, Hmac, Mac};
+use k256::{AffinePoint, Secp256k1};
 use sha2::Sha512;
 
 #[macro_use]
@@ -25,9 +28,15 @@ mod local_macro {
 
 //----------------------------------------------------------------
 
+const GENERATOR: AffinePoint = AffinePoint::GENERATOR;
+
+const ORDER: U256 = Secp256k1::ORDER;
+
 const KEY_SIZE: usize = 32;
 
 type HmacSha512 = Hmac<Sha512>;
+
+type EcdsaScalar = NonZeroScalar<Secp256k1>;
 
 pub trait KeyBytes: Sized + AsRef<[u8]> {
     fn new_child(&self, key: &[u8]) -> Result<Self, ExtendError>;
@@ -36,7 +45,7 @@ pub trait KeyBytes: Sized + AsRef<[u8]> {
 pub trait PrvKey: KeyBytes {
     type Public: PubKey;
 
-    fn get_public(&self) -> &Self::Public;
+    fn get_public(&self) -> Result<Self::Public, ExtendError>;
 }
 
 pub trait PubKey: KeyBytes {}
@@ -48,6 +57,11 @@ pub struct ExtendError(String);
 
 impl From<InvalidLength> for ExtendError {
     fn from(src: InvalidLength) -> Self {
+        Self(src.to_string())
+    }
+}
+impl From<elliptic_curve::Error> for ExtendError {
+    fn from(src: elliptic_curve::Error) -> Self {
         Self(src.to_string())
     }
 }
@@ -71,16 +85,21 @@ pub struct PrvKeyBytes([u8; KEY_SIZE]);
 fixed_bytes!(PrvKeyBytes);
 
 impl KeyBytes for PrvKeyBytes {
-    fn new_child(&self, _: &[u8]) -> Result<Self, ExtendError> {
-        todo!()
+    fn new_child(&self, salt: &[u8]) -> Result<Self, ExtendError> {
+        let a = U256::from_be_bytes(self.0);
+        let b = U256::from_be_slice(salt);
+        let c = a.add_mod(&b, &ORDER);
+        Ok(Self(c.to_be_bytes()))
     }
 }
 
 impl PrvKey for PrvKeyBytes {
     type Public = PubKeyBytes;
 
-    fn get_public(&self) -> &Self::Public {
-        todo!()
+    fn get_public(&self) -> Result<Self::Public, ExtendError> {
+        let a = EcdsaScalar::try_from(self.as_ref())?;
+        let b = GENERATOR * *a;
+        Ok(b.to_bytes().as_slice().try_into()?)
     }
 }
 
@@ -88,9 +107,20 @@ impl PrvKey for PrvKeyBytes {
 pub struct PubKeyBytes([u8; KEY_SIZE + 1]);
 fixed_bytes!(PubKeyBytes);
 
+impl PubKeyBytes {
+    fn to_point(&self) -> Result<AffinePoint, ExtendError> {
+        let bs = self.as_ref().into();
+        let o: Option<_> = AffinePoint::from_bytes(bs).into();
+        o.ok_or_else(|| ExtendError("Unrecognizable bytes of public key.".to_owned()))
+    }
+}
+
 impl KeyBytes for PubKeyBytes {
-    fn new_child(&self, _: &[u8]) -> Result<Self, ExtendError> {
-        todo!()
+    fn new_child(&self, salt: &[u8]) -> Result<Self, ExtendError> {
+        let a = EcdsaScalar::try_from(salt)?;
+        let b = GENERATOR * *a;
+        let c = b + self.to_point()?;
+        Ok(c.to_bytes().as_slice().try_into()?)
     }
 }
 
@@ -143,7 +173,7 @@ impl<A: PubKey> ExtKey<A> {
 impl<A: PrvKey> ExtKey<A> {
     pub fn get_child(&self, node: Node) -> Result<Self, ExtendError> {
         match node {
-            Node::Normal(index) => self.mk_child(index.into(), self.key.get_public()),
+            Node::Normal(index) => self.mk_child(index.into(), &self.key.get_public()?),
             Node::Hardened(index) => self.mk_child(index.into(), &self.key),
         }
     }
