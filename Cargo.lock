@@ -1390,8 +1390,10 @@ dependencies = [
  "derive-new",
  "derive_more",
  "getset",
+ "hmac",
  "num-bigint",
  "num-traits",
+ "sha2 0.10.2",
  "tinyvec",
 ]
 
