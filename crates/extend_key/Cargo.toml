@@ -6,6 +6,8 @@ edition = "2021"
 [dependencies]
 hdpath = { path = "../hdpath" }
 
+bs58 = { version = "~0.4", default-features = false, features = ["check"] }
+bytes = "~1.1"
 sha2 = "~0.10"
 hmac = "~0.12"
 elliptic-curve = "~0.11"

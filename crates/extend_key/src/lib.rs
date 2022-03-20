@@ -1,3 +1,4 @@
+pub mod base58;
 pub mod ecdsa_key;
 pub mod error;
 pub mod extkey;

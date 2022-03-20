@@ -3,8 +3,22 @@ macro_rules! fixed_bytes {
         impl TryFrom<&[u8]> for $t {
             type Error = crate::ExtendError;
 
-            fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-                Ok(Self(value.try_into().map_err(|_| crate::ExtendError::wrong_length_bytes())?))
+            fn try_from(src: &[u8]) -> Result<Self, Self::Error> {
+                Ok(Self(src.try_into().map_err(|_| crate::ExtendError::wrong_length_bytes())?))
+            }
+        }
+
+        impl TryFrom<bytes::Bytes> for $t {
+            type Error = crate::ExtendError;
+
+            fn try_from(src: bytes::Bytes) -> Result<Self, Self::Error> {
+                src.as_ref().try_into()
+            }
+        }
+
+        impl From<$t> for bytes::Bytes {
+            fn from(src: $t) -> bytes::Bytes {
+                bytes::Bytes::copy_from_slice(src.as_ref())
             }
         }
 

@@ -722,6 +722,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bs58"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "771fe0050b883fcc3ea2359b1a96bcfbc090b7116eae7c3c512c7a083fdf23d3"
+dependencies = [
+ "sha2 0.9.9",
+]
+
+[[package]]
 name = "bumpalo"
 version = "3.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1201,6 +1210,8 @@ checksum = "77f3309417938f28bf8228fcff79a4a37103981e3e186d2ccd19c74b38f4eb71"
 name = "extend_key"
 version = "0.0.1"
 dependencies = [
+ "bs58",
+ "bytes",
  "crypto-bigint",
  "elliptic-curve",
  "hdpath",

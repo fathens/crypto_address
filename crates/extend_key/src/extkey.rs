@@ -1,3 +1,4 @@
+use crate::base58;
 use crate::ecdsa_key::{Fingerprint, KeyBytes, PrvKey, PubKey, KEY_SIZE};
 use crate::local_macro::fixed_bytes;
 use crate::ExtendError;
@@ -10,6 +11,19 @@ type HmacSha512 = Hmac<Sha512>;
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ChainCode([u8; KEY_SIZE]);
 fixed_bytes!(ChainCode);
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Depth([u8; 1]);
+fixed_bytes!(Depth);
+
+impl Depth {
+    fn increment(&self) -> Result<Self, ExtendError> {
+        let next = self.0[0]
+            .checked_add(1)
+            .ok_or(ExtendError::depth_exceeded())?;
+        Ok(Self([next]))
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ChildNumber([u8; 4]);
@@ -25,33 +39,38 @@ impl From<u32> for ChildNumber {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ExtKey<A> {
-    parent: Fingerprint,
-    chain_code: ChainCode,
-    key: A,
-    child_number: ChildNumber,
+    pub prefix: base58::Prefix,
+    pub parent: Fingerprint,
+    pub chain_code: ChainCode,
+    pub key: A,
+    pub depth: Depth,
+    pub child_number: ChildNumber,
 }
 
 impl<A: KeyBytes> ExtKey<A> {
     fn mk_child<K: AsRef<[u8]>>(
         &self,
+        prefix: base58::Prefix,
         parent: Fingerprint,
         child_number: ChildNumber,
         key: &K,
     ) -> Result<Self, ExtendError> {
         let key_bytes = key.as_ref();
-        let prefix = vec![0; (KEY_SIZE + 1) - key_bytes.len()];
+        let padding = vec![0; (KEY_SIZE + 1) - key_bytes.len()];
 
         let mut hash = HmacSha512::new_from_slice(self.chain_code.as_ref())?;
-        hash.update(&prefix);
+        hash.update(&padding);
         hash.update(key_bytes);
         hash.update(child_number.as_ref());
         let hashed = &hash.finalize().into_bytes();
 
         let (child_key, chain_code) = hashed.split_at(hashed.len() / 2);
         let next = ExtKey {
+            prefix,
             parent,
             chain_code: chain_code.try_into()?,
             key: self.key.new_child(child_key)?,
+            depth: self.depth.increment()?,
             child_number,
         };
         Ok(next)
@@ -61,7 +80,12 @@ impl<A: KeyBytes> ExtKey<A> {
 impl<A: PubKey> ExtKey<A> {
     pub fn get_child_normal_only(&self, node: Node) -> Result<Self, ExtendError> {
         if let Node::Normal(index) = node {
-            self.mk_child(self.key.fingerprint(), index.into(), &self.key)
+            self.mk_child(
+                self.prefix.clone(),
+                self.key.fingerprint(),
+                index.into(),
+                &self.key,
+            )
         } else {
             Err(ExtendError::cannot_hardened())
         }
@@ -72,8 +96,54 @@ impl<A: PrvKey> ExtKey<A> {
     pub fn get_child(&self, node: Node) -> Result<Self, ExtendError> {
         let fp = self.key.get_public()?.fingerprint();
         match node {
-            Node::Normal(index) => self.mk_child(fp, index.into(), &self.key.get_public()?),
-            Node::Hardened(index) => self.mk_child(fp, index.into(), &self.key),
+            Node::Normal(index) => self.mk_child(
+                self.prefix.get_public(),
+                fp,
+                index.into(),
+                &self.key.get_public()?,
+            ),
+            Node::Hardened(index) => {
+                self.mk_child(self.prefix.clone(), fp, index.into(), &self.key)
+            }
         }
+    }
+}
+
+//----------------------------------------------------------------
+
+impl<A> From<ExtKey<A>> for base58::DecodedExtKey
+where
+    A: KeyBytes,
+    A: Into<bytes::Bytes>,
+{
+    fn from(src: ExtKey<A>) -> Self {
+        base58::DecodedExtKey {
+            prefix: src.prefix.clone(),
+            depth: src.depth.into(),
+            parent: src.parent.into(),
+            child_number: src.child_number.into(),
+            chain_code: src.chain_code.into(),
+            key: src.key.into(),
+        }
+    }
+}
+
+impl<'a, A> TryFrom<base58::DecodedExtKey> for ExtKey<A>
+where
+    A: KeyBytes,
+    A: TryFrom<bytes::Bytes, Error = ExtendError>,
+{
+    type Error = ExtendError;
+
+    fn try_from(src: base58::DecodedExtKey) -> Result<Self, Self::Error> {
+        let r = Self {
+            prefix: src.prefix.clone(),
+            depth: src.depth.try_into()?,
+            parent: src.parent.try_into()?,
+            child_number: src.child_number.try_into()?,
+            chain_code: src.chain_code.try_into()?,
+            key: src.key.try_into()?,
+        };
+        Ok(r)
     }
 }
