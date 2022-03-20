@@ -14,7 +14,7 @@ mod local_macro {
                 type Error = InvalidLength;
 
                 fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-                    Ok(Self(fix_array(value)?))
+                    Ok(Self(value.try_into().map_err(|_| InvalidLength)?))
                 }
             }
 
@@ -29,11 +29,11 @@ mod local_macro {
 
 //----------------------------------------------------------------
 
+pub const KEY_SIZE: usize = 32;
+
 const GENERATOR: AffinePoint = AffinePoint::GENERATOR;
 
 const ORDER: U256 = Secp256k1::ORDER;
-
-const KEY_SIZE: usize = 32;
 
 type EcdsaScalar = NonZeroScalar<Secp256k1>;
 
@@ -107,9 +107,4 @@ impl PubKey for PubKeyBytes {
         let ds = Ripemd160::digest(&sha);
         ds[..4].try_into().expect("taken 4 bytes must be 4 bytes")
     }
-}
-
-#[inline]
-fn fix_array<const N: usize>(bs: &[u8]) -> Result<[u8; N], InvalidLength> {
-    bs.try_into().ok().ok_or(InvalidLength)
 }

@@ -1,0 +1,14 @@
+[package]
+name = "extend_key"
+version = "0.0.1"
+edition = "2021"
+
+[dependencies]
+hdpath = { path = "../hdpath" }
+
+sha2 = "~0.10"
+hmac = "~0.12"
+elliptic-curve = "~0.11"
+k256 = "~0.10"
+crypto-bigint = "~0.3"
+ripemd = "~0.1"

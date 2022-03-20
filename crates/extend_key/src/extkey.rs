@@ -1,6 +1,6 @@
-use crate::ecdsa_key::{Fingerprint, KeyBytes, PrvKey, PubKey};
-use crate::node::Node;
+use crate::ecdsa_key::{Fingerprint, KeyBytes, PrvKey, PubKey, KEY_SIZE};
 use crate::ExtendError;
+use hdpath::node::Node;
 use hmac::{digest::InvalidLength, Hmac, Mac};
 use sha2::Sha512;
 
@@ -12,7 +12,7 @@ mod local_macro {
                 type Error = InvalidLength;
 
                 fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-                    Ok(Self(fix_array(value)?))
+                    Ok(Self(value.try_into().map_err(|_| InvalidLength)?))
                 }
             }
 
@@ -27,11 +27,7 @@ mod local_macro {
 
 //----------------------------------------------------------------
 
-const KEY_SIZE: usize = 32;
-
 type HmacSha512 = Hmac<Sha512>;
-
-//----------------------------------------------------------------
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ChainCode([u8; KEY_SIZE]);
@@ -104,9 +100,4 @@ impl<A: PrvKey> ExtKey<A> {
             Node::Hardened(index) => self.mk_child(fp, index.into(), &self.key),
         }
     }
-}
-
-#[inline]
-fn fix_array<const N: usize>(bs: &[u8]) -> Result<[u8; N], InvalidLength> {
-    bs.try_into().ok().ok_or(InvalidLength)
 }
