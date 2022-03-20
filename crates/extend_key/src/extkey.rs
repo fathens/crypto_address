@@ -2,7 +2,7 @@ use crate::ecdsa_key::{Fingerprint, KeyBytes, PrvKey, PubKey, KEY_SIZE};
 use crate::local_macro::fixed_bytes;
 use crate::ExtendError;
 use hdpath::node::Node;
-use hmac::{digest::InvalidLength, Hmac, Mac};
+use hmac::{Hmac, Mac};
 use sha2::Sha512;
 
 type HmacSha512 = Hmac<Sha512>;
@@ -63,9 +63,7 @@ impl<A: PubKey> ExtKey<A> {
         if let Node::Normal(index) = node {
             self.mk_child(self.key.fingerprint(), index.into(), &self.key)
         } else {
-            Err(ExtendError(
-                "public key can not derive hardened key".to_owned(),
-            ))
+            Err(ExtendError::cannot_hardened())
         }
     }
 }

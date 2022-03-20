@@ -1,10 +1,10 @@
 macro_rules! fixed_bytes {
     ($t:ident) => {
         impl TryFrom<&[u8]> for $t {
-            type Error = InvalidLength;
+            type Error = crate::ExtendError;
 
             fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-                Ok(Self(value.try_into().map_err(|_| InvalidLength)?))
+                Ok(Self(value.try_into().map_err(|_| crate::ExtendError::wrong_length_bytes())?))
             }
         }
 

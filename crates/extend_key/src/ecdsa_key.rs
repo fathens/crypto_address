@@ -2,7 +2,6 @@ use crate::local_macro::fixed_bytes;
 use crate::ExtendError;
 use crypto_bigint::{Encoding, U256};
 use elliptic_curve::{group::GroupEncoding, Curve, NonZeroScalar};
-use hmac::digest::InvalidLength;
 use k256::{AffinePoint, Secp256k1};
 use ripemd::Ripemd160;
 use sha2::{Digest, Sha256};
@@ -66,7 +65,7 @@ impl PubKeyBytes {
     fn to_point(&self) -> Result<AffinePoint, ExtendError> {
         let bs = self.as_ref().into();
         let o: Option<_> = AffinePoint::from_bytes(bs).into();
-        o.ok_or_else(|| ExtendError("Unrecognizable bytes of public key.".to_owned()))
+        o.ok_or_else(|| ExtendError::invalid_format("public key."))
     }
 }
 
