@@ -1,31 +1,9 @@
 use crate::ecdsa_key::{Fingerprint, KeyBytes, PrvKey, PubKey, KEY_SIZE};
+use crate::local_macro::fixed_bytes;
 use crate::ExtendError;
 use hdpath::node::Node;
 use hmac::{digest::InvalidLength, Hmac, Mac};
 use sha2::Sha512;
-
-#[macro_use]
-mod local_macro {
-    macro_rules! fixed_bytes {
-        ($t:ident) => {
-            impl TryFrom<&[u8]> for $t {
-                type Error = InvalidLength;
-
-                fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-                    Ok(Self(value.try_into().map_err(|_| InvalidLength)?))
-                }
-            }
-
-            impl AsRef<[u8]> for $t {
-                fn as_ref(&self) -> &[u8] {
-                    &self.0
-                }
-            }
-        };
-    }
-}
-
-//----------------------------------------------------------------
 
 type HmacSha512 = Hmac<Sha512>;
 
