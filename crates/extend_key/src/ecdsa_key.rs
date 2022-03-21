@@ -1,3 +1,4 @@
+use crate::fixed_bytes::FixedBytes;
 use crate::local_macro::fixed_bytes;
 use crate::ExtendError;
 use crypto_bigint::{Encoding, U256};
@@ -14,7 +15,7 @@ const ORDER: U256 = Secp256k1::ORDER;
 
 type EcdsaScalar = NonZeroScalar<Secp256k1>;
 
-pub trait KeyBytes: Sized + AsRef<[u8]> {
+pub trait KeyBytes: Sized + FixedBytes + AsRef<[u8]> {
     fn new_child(&self, key: &[u8]) -> Result<Self, ExtendError>;
 }
 

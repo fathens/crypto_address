@@ -1,4 +1,5 @@
 use crate::ecdsa_key::KEY_SIZE;
+use crate::fixed_bytes::FixedBytes;
 use crate::local_macro::fixed_bytes;
 use crate::ExtendError;
 use bytes::{Buf, BufMut, Bytes, BytesMut};

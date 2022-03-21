@@ -1,7 +1,9 @@
 use crate::base58;
 use crate::ecdsa_key::{Fingerprint, KeyBytes, PrvKey, PubKey, KEY_SIZE};
+use crate::fixed_bytes::FixedBytes;
 use crate::local_macro::fixed_bytes;
 use crate::ExtendError;
+use core::fmt;
 use hdpath::node::Node;
 use hmac::{Hmac, Mac};
 use sha2::Sha512;
@@ -111,24 +113,20 @@ impl<A: PrvKey> ExtKey<A> {
 
 //----------------------------------------------------------------
 
-impl<A> From<ExtKey<A>> for base58::DecodedExtKey
-where
-    A: KeyBytes,
-    A: Into<bytes::Bytes>,
-{
-    fn from(src: ExtKey<A>) -> Self {
+impl<A: KeyBytes> From<&ExtKey<A>> for base58::DecodedExtKey {
+    fn from(src: &ExtKey<A>) -> Self {
         base58::DecodedExtKey {
             prefix: src.prefix.clone(),
-            depth: src.depth.into(),
-            parent: src.parent.into(),
-            child_number: src.child_number.into(),
-            chain_code: src.chain_code.into(),
-            key: src.key.into(),
+            depth: src.depth.copy_bytes(),
+            parent: src.parent.copy_bytes(),
+            child_number: src.child_number.copy_bytes(),
+            chain_code: src.chain_code.copy_bytes(),
+            key: src.key.copy_bytes(),
         }
     }
 }
 
-impl<'a, A> TryFrom<base58::DecodedExtKey> for ExtKey<A>
+impl<A> TryFrom<base58::DecodedExtKey> for ExtKey<A>
 where
     A: KeyBytes,
     A: TryFrom<bytes::Bytes, Error = ExtendError>,
@@ -145,5 +143,12 @@ where
             key: src.key.try_into()?,
         };
         Ok(r)
+    }
+}
+
+impl<A: KeyBytes> fmt::Display for ExtKey<A> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let d: base58::DecodedExtKey = self.into();
+        d.fmt(f)
     }
 }

@@ -16,9 +16,9 @@ macro_rules! fixed_bytes {
             }
         }
 
-        impl From<$t> for bytes::Bytes {
-            fn from(src: $t) -> bytes::Bytes {
-                bytes::Bytes::copy_from_slice(src.as_ref())
+        impl FixedBytes for $t {
+            fn copy_bytes(&self) -> bytes::Bytes {
+                bytes::Bytes::copy_from_slice(self.as_ref())
             }
         }
 
