@@ -104,7 +104,7 @@ where
             self.mk_child(self.prefix.clone(), fp, node.raw_index().into(), &self.key)
         } else {
             self.mk_child(
-                self.prefix.get_public()?,
+                self.prefix.clone(),
                 fp,
                 node.raw_index().into(),
                 &self.key.get_public()?,
