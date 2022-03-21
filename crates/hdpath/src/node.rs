@@ -16,6 +16,20 @@ impl Node {
             _ => *self,
         }
     }
+
+    pub fn is_hardened(&self) -> bool {
+        match self {
+            Node::Hardened(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn raw_index(&self) -> u32 {
+        match self {
+            Node::Hardened(index) => *index + SIGN_HARDENED,
+            Node::Normal(index) => *index,
+        }
+    }
 }
 
 impl From<u32> for Node {

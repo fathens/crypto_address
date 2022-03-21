@@ -81,32 +81,30 @@ impl<A: KeyBytes> ExtKey<A> {
 
 impl<A: PubKey> ExtKey<A> {
     pub fn get_child_normal_only(&self, node: Node) -> Result<Self, ExtendError> {
-        if let Node::Normal(index) = node {
-            self.mk_child(
-                self.prefix.clone(),
-                self.key.fingerprint(),
-                index.into(),
-                &self.key,
-            )
-        } else {
-            Err(ExtendError::cannot_hardened())
+        if node.is_hardened() {
+            return Err(ExtendError::cannot_hardened());
         }
+        self.mk_child(
+            self.prefix.clone(),
+            self.key.fingerprint(),
+            node.raw_index().into(),
+            &self.key,
+        )
     }
 }
 
 impl<A: PrvKey> ExtKey<A> {
     pub fn get_child(&self, node: Node) -> Result<Self, ExtendError> {
         let fp = self.key.get_public()?.fingerprint();
-        match node {
-            Node::Normal(index) => self.mk_child(
+        if node.is_hardened() {
+            self.mk_child(self.prefix.clone(), fp, node.raw_index().into(), &self.key)
+        } else {
+            self.mk_child(
                 self.prefix.get_public()?,
                 fp,
-                index.into(),
+                node.raw_index().into(),
                 &self.key.get_public()?,
-            ),
-            Node::Hardened(index) => {
-                self.mk_child(self.prefix.clone(), fp, index.into(), &self.key)
-            }
+            )
         }
     }
 }
