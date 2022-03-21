@@ -93,7 +93,11 @@ impl<A: PubKey> ExtKey<A> {
     }
 }
 
-impl<A: PrvKey> ExtKey<A> {
+impl<A, B> ExtKey<A>
+where
+    A: PrvKey<Public = B>,
+    B: PubKey,
+{
     pub fn get_child(&self, node: Node) -> Result<Self, ExtendError> {
         let fp = self.key.get_public()?.fingerprint();
         if node.is_hardened() {
@@ -106,6 +110,18 @@ impl<A: PrvKey> ExtKey<A> {
                 &self.key.get_public()?,
             )
         }
+    }
+
+    pub fn get_public(&self) -> Result<ExtKey<B>, ExtendError> {
+        let r = ExtKey {
+            prefix: self.prefix.get_public()?,
+            parent: self.parent.clone(),
+            chain_code: self.chain_code.clone(),
+            key: self.key.get_public()?,
+            depth: self.depth.clone(),
+            child_number: self.child_number.clone(),
+        };
+        Ok(r)
     }
 }
 
