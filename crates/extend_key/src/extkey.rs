@@ -97,7 +97,7 @@ impl<A: PrvKey> ExtKey<A> {
         let fp = self.key.get_public()?.fingerprint();
         match node {
             Node::Normal(index) => self.mk_child(
-                self.prefix.get_public(),
+                self.prefix.get_public()?,
                 fp,
                 index.into(),
                 &self.key.get_public()?,

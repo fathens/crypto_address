@@ -23,6 +23,10 @@ impl ExtendError {
     pub fn type_missmatched() -> ExtendError {
         ExtendError("Type miss-matched".to_owned())
     }
+
+    pub fn unsupported_version() -> ExtendError {
+        ExtendError("unsupported version".to_owned())
+    }
 }
 
 impl From<InvalidLength> for ExtendError {
