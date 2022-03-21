@@ -4,7 +4,10 @@ macro_rules! fixed_bytes {
             type Error = crate::ExtendError;
 
             fn try_from(src: &[u8]) -> Result<Self, Self::Error> {
-                Ok(Self(src.try_into().map_err(|_| crate::ExtendError::wrong_length_bytes())?))
+                Ok(Self(
+                    src.try_into()
+                        .map_err(|_| crate::ExtendError::wrong_length_bytes())?,
+                ))
             }
         }
 
