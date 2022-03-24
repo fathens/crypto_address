@@ -24,6 +24,10 @@ impl Node {
         }
     }
 
+    pub fn is_normal(&self) -> bool {
+        !self.is_hardened()
+    }
+
     pub fn raw_index(&self) -> u32 {
         match self {
             Node::Hardened(index) => *index + SIGN_HARDENED,
