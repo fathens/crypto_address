@@ -1,8 +1,9 @@
 use crate::base58;
-use crate::ecdsa_key::{Fingerprint, KeyBytes, PrvKey, PubKey, KEY_SIZE};
+use crate::ecdsa_key::{Fingerprint, KeyBytes, PrvKey, PrvKeyBytes, PubKey, KEY_SIZE};
 use crate::fixed_bytes::FixedBytes;
 use crate::local_macro::fixed_bytes;
 use crate::ExtendError;
+use bytes::Bytes;
 use core::fmt;
 use hdpath::node::Node;
 use hmac::{Hmac, Mac};
@@ -47,6 +48,27 @@ pub struct ExtKey<A> {
     pub key: A,
     pub depth: Depth,
     pub child_number: ChildNumber,
+}
+
+impl ExtKey<PrvKeyBytes> {
+    pub fn from_seed(prefix: base58::Prefix, seed: Bytes) -> Result<Self, ExtendError> {
+        if prefix.is_public() {
+            return Err(ExtendError::type_missmatched());
+        }
+        let mut hash = HmacSha512::new_from_slice("Bitcoin seed".as_bytes())?;
+        hash.update(&seed);
+        let hashed = &hash.finalize().into_bytes();
+        let (child_key, chain_code) = hashed.split_at(hashed.len() / 2);
+        let result = ExtKey {
+            prefix,
+            parent: [0, 0, 0, 0].as_ref().try_into()?,
+            chain_code: chain_code.try_into()?,
+            key: child_key.try_into()?,
+            depth: [0].as_ref().try_into()?,
+            child_number: 0.into(),
+        };
+        Ok(result)
+    }
 }
 
 impl<A: KeyBytes> ExtKey<A> {
@@ -164,5 +186,53 @@ impl<A: KeyBytes> fmt::Display for ExtKey<A> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let d: base58::DecodedExtKey = self.into();
         d.fmt(f)
+    }
+}
+
+//----------------------------------------------------------------
+
+#[cfg(test)]
+mod test {
+    use hex_literal::hex;
+
+    use super::*;
+
+    type ExtPrvKey = ExtKey<PrvKeyBytes>;
+
+    fn check(seed: Bytes, expected: &str) {
+        let actual = ExtPrvKey::from_seed(base58::Prefix::XPRV, seed).unwrap();
+        assert_eq!(expected, actual.to_string().as_str());
+    }
+
+    #[test]
+    fn seed_vector1() {
+        check(
+            hex!("000102030405060708090a0b0c0d0e0f").as_ref().into(),
+            "xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi"
+        );
+    }
+
+    #[test]
+    fn seed_vector2() {
+        check(
+            hex!("fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542").as_ref().into(),
+            "xprv9s21ZrQH143K31xYSDQpPDxsXRTUcvj2iNHm5NUtrGiGG5e2DtALGdso3pGz6ssrdK4PFmM8NSpSBHNqPqm55Qn3LqFtT2emdEXVYsCzC2U"
+        );
+    }
+
+    #[test]
+    fn seed_vector3() {
+        check(
+            hex!("4b381541583be4423346c643850da4b320e46a87ae3d2a4e6da11eba819cd4acba45d239319ac14f863b8d5ab5a0d0c64d2e8a1e7d1457df2e5a3c51c73235be").as_ref().into(),
+            "xprv9s21ZrQH143K25QhxbucbDDuQ4naNntJRi4KUfWT7xo4EKsHt2QJDu7KXp1A3u7Bi1j8ph3EGsZ9Xvz9dGuVrtHHs7pXeTzjuxBrCmmhgC6"
+        );
+    }
+
+    #[test]
+    fn seed_vector4() {
+        check(
+            hex!("3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678").as_ref().into(),
+            "xprv9s21ZrQH143K48vGoLGRPxgo2JNkJ3J3fqkirQC2zVdk5Dgd5w14S7fRDyHH4dWNHUgkvsvNDCkvAwcSHNAQwhwgNMgZhLtQC63zxwhQmRv"
+        );
     }
 }

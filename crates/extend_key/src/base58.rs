@@ -22,10 +22,10 @@ static PREFIX_PAIRS: Lazy<HashMap<Prefix, Prefix>> = Lazy::new(|| {
 });
 
 impl Prefix {
-    const XPRV: Prefix = Prefix([0x04, 0x88, 0xad, 0xe4]);
-    const XPUB: Prefix = Prefix([0x04, 0x88, 0xB2, 0x1E]);
-    const TPRV: Prefix = Prefix([0x04, 0x35, 0x83, 0x94]);
-    const TPUB: Prefix = Prefix([0x04, 0x35, 0x87, 0xCF]);
+    pub const XPRV: Prefix = Prefix([0x04, 0x88, 0xad, 0xe4]);
+    pub const XPUB: Prefix = Prefix([0x04, 0x88, 0xB2, 0x1E]);
+    pub const TPRV: Prefix = Prefix([0x04, 0x35, 0x83, 0x94]);
+    pub const TPUB: Prefix = Prefix([0x04, 0x35, 0x87, 0xCF]);
 
     pub fn is_public(&self) -> bool {
         !self.is_private()
