@@ -2,14 +2,3 @@
 name = "hdpath"
 version = "0.0.1"
 edition = "2021"
-
-[dependencies]
-derive-new = "~0.5"
-tinyvec = "~1.5"
-derive_more = "~0.99"
-getset = "~0.1"
-bytes = "~1.1"
-num-traits = "~0.2"
-num-bigint = "~0.4"
-sha2 = "~0.10"
-hmac = "~0.12"
