@@ -1,6 +1,3 @@
-use hdpath::path::HDPath;
-use once_cell::sync::Lazy;
-
 mod common;
 
 const CHAIN: [(&str, &str); 6] = [
@@ -30,9 +27,7 @@ const CHAIN: [(&str, &str); 6] = [
     ),
 ];
 
-static PATH: Lazy<HDPath> = Lazy::new(|| "m/0'/1/2'/2/1000000000".parse().unwrap());
-
 #[test]
 fn check_vector1() {
-    common::check_vector(&CHAIN, &PATH);
+    common::check_vector(&CHAIN, &"m/0'/1/2'/2/1000000000".parse().unwrap());
 }
