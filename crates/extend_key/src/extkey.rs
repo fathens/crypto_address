@@ -1,11 +1,12 @@
 use crate::base58;
-use crate::ecdsa_key::{Fingerprint, KeyBytes, PrvKey, PrvKeyBytes, PubKey, KEY_SIZE};
+use crate::ecdsa_key::{Fingerprint, KeyBytes, PrvKey, PrvKeyBytes, PubKey, PubKeyBytes, KEY_SIZE};
 use crate::fixed_bytes::FixedBytes;
 use crate::local_macro::fixed_bytes;
 use crate::ExtendError;
 use bytes::Bytes;
 use core::fmt;
 use hdpath::node::Node;
+use hdpath::path::HDPath;
 use hmac::{Hmac, Mac};
 use sha2::Sha512;
 
@@ -69,6 +70,16 @@ impl ExtKey<PrvKeyBytes> {
         };
         Ok(result)
     }
+
+    pub fn get_key(&self) -> &PrvKeyBytes {
+        &self.key
+    }
+}
+
+impl ExtKey<PubKeyBytes> {
+    pub fn get_key(&self) -> &PubKeyBytes {
+        &self.key
+    }
 }
 
 impl<A: KeyBytes> ExtKey<A> {
@@ -131,6 +142,16 @@ where
                 node.raw_index().into(),
                 &self.key.get_public()?,
             )
+        }
+    }
+
+    pub fn derive_child(&self, path: HDPath) -> Result<Self, ExtendError> {
+        if let [head, tail @ ..] = path.nodes() {
+            tail.iter().fold(self.get_child(*head), |prev, node| {
+                prev.and_then(|parent| parent.get_child(*node))
+            })
+        } else {
+            Err(ExtendError::invalid_hdpath())
         }
     }
 

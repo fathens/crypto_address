@@ -1,0 +1,14 @@
+[package]
+name = "evm_address"
+version = "0.0.1"
+edition = "2021"
+
+[dependencies]
+extend_key = { path = "../extend_key" }
+hdpath = { path = "../hdpath" }
+mnemonic = { path = "../mnemonic" }
+
+sha3 = "~0.10"
+
+[dev-dependencies]
+hex-literal = "~0.3"

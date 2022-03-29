@@ -55,7 +55,7 @@ where
     A: Copy,
 {
     hdpath
-        .path()
+        .nodes()
         .iter()
         .zip(&chain[1..])
         .fold(chain[0], |parent, (node, child)| {
