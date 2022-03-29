@@ -1213,6 +1213,7 @@ dependencies = [
  "extend_key",
  "hdpath",
  "hex-literal",
+ "mnemonic",
  "sha3",
 ]
 

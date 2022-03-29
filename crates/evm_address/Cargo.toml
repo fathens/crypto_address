@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 extend_key = { path = "../extend_key" }
 hdpath = { path = "../hdpath" }
+mnemonic = { path = "../mnemonic" }
 
 sha3 = "~0.10"
 

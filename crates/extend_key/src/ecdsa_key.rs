@@ -2,7 +2,7 @@ use crate::fixed_bytes::FixedBytes;
 use crate::local_macro::fixed_bytes;
 use crate::ExtendError;
 use crypto_bigint::{Encoding, U256};
-use elliptic_curve::{group::GroupEncoding, Curve, NonZeroScalar};
+use elliptic_curve::{group::GroupEncoding, sec1::ToEncodedPoint, Curve, NonZeroScalar};
 use k256::{AffinePoint, Secp256k1};
 use ripemd::Ripemd160;
 use sha2::{Digest, Sha256};
@@ -63,10 +63,20 @@ pub struct PubKeyBytes([u8; KEY_SIZE + 1]);
 fixed_bytes!(PubKeyBytes);
 
 impl PubKeyBytes {
-    fn to_point(&self) -> Result<AffinePoint, ExtendError> {
+    fn to_point(&self) -> AffinePoint {
         let bs = self.as_ref().into();
         let o: Option<_> = AffinePoint::from_bytes(bs).into();
-        o.ok_or_else(|| ExtendError::invalid_format("public key."))
+        o.expect("Wrong bytes should not be here")
+    }
+
+    pub fn uncompressed_bytes(&self) -> [u8; KEY_SIZE * 2 + 1] {
+        let point = self.to_point();
+        let encoded = point.to_encoded_point(false);
+        println!("length of encoded point: {:?}", encoded.len());
+        encoded
+            .as_bytes()
+            .try_into()
+            .expect("Should be valid length")
     }
 }
 
@@ -74,7 +84,7 @@ impl KeyBytes for PubKeyBytes {
     fn new_child(&self, salt: &[u8]) -> Result<Self, ExtendError> {
         let a = EcdsaScalar::try_from(salt)?;
         let b = GENERATOR * *a;
-        let c = b + self.to_point()?;
+        let c = b + self.to_point();
         Ok(c.to_bytes().as_slice().try_into()?)
     }
 }

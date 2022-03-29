@@ -105,5 +105,8 @@ mod test {
         assert_eq!(None as Option<HDPath>, "m/1/2/3/".parse().ok());
         assert_eq!(None as Option<HDPath>, "1/m/2/3".parse().ok());
         assert_eq!(None as Option<HDPath>, "m//1/2/3".parse().ok());
+        assert_eq!(None as Option<HDPath>, "m".parse().ok());
+        assert_eq!(None as Option<HDPath>, "m/".parse().ok());
+        assert_eq!(None as Option<HDPath>, "".parse().ok());
     }
 }

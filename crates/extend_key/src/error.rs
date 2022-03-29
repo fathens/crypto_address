@@ -4,6 +4,10 @@ use hmac::digest::InvalidLength;
 pub struct ExtendError(String);
 
 impl ExtendError {
+    pub fn invalid_hdpath() -> ExtendError {
+        ExtendError("Invalid hdpath".to_owned())
+    }
+
     pub fn depth_exceeded() -> ExtendError {
         ExtendError("Exceeded depth".to_owned())
     }
