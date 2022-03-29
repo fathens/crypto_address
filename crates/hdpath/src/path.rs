@@ -29,7 +29,7 @@ pub struct HDPath(Vec<Node>);
 
 impl HDPath {
     #[inline]
-    pub fn path(&self) -> &[Node] {
+    pub fn nodes(&self) -> &[Node] {
         &self.0
     }
 }

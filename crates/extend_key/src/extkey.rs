@@ -146,7 +146,7 @@ where
     }
 
     pub fn derive_child(&self, path: HDPath) -> Result<Self, ExtendError> {
-        if let [head, tail @ ..] = path.path() {
+        if let [head, tail @ ..] = path.nodes() {
             tail.iter().fold(self.get_child(*head), |prev, node| {
                 prev.and_then(|parent| parent.get_child(*node))
             })
