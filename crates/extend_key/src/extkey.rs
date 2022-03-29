@@ -1,5 +1,5 @@
 use crate::base58;
-use crate::ecdsa_key::{Fingerprint, KeyBytes, PrvKey, PrvKeyBytes, PubKey, KEY_SIZE, PubKeyBytes};
+use crate::ecdsa_key::{Fingerprint, KeyBytes, PrvKey, PrvKeyBytes, PubKey, PubKeyBytes, KEY_SIZE};
 use crate::fixed_bytes::FixedBytes;
 use crate::local_macro::fixed_bytes;
 use crate::ExtendError;
