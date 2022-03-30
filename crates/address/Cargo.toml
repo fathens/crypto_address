@@ -1,5 +1,5 @@
 [package]
-name = "evm_address"
+name = "address"
 version = "0.0.1"
 edition = "2021"
 
