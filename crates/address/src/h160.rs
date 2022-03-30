@@ -1,9 +1,8 @@
+use crate::common::{mk_hash, BYTE_SIZE};
 use crate::error::EAddressError;
 use core::{fmt, str};
 use extend_key::ecdsa_key::PubKeyBytes;
 use sha3::{Digest, Keccak256};
-
-const BYTE_SIZE: usize = 20;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct EvmAddress([u8; BYTE_SIZE]);
@@ -71,13 +70,7 @@ impl str::FromStr for EvmAddress {
 
 impl From<PubKeyBytes> for EvmAddress {
     fn from(src: PubKeyBytes) -> Self {
-        let data = src.uncompressed_bytes();
-        let mut keccak = Keccak256::new();
-        keccak.update(&data[1..]);
-        let result32 = keccak.finalize();
-        let drop = result32.len() - BYTE_SIZE;
-        let array = &result32[drop..];
-        Self(array.try_into().expect("Should be 20 bytes"))
+        Self(mk_hash(src))
     }
 }
 
