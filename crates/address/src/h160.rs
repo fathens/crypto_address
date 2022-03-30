@@ -21,18 +21,23 @@ impl EvmAddress {
     }
 
     fn to_with_checksum(src: &str) -> String {
-        let lowers = src.trim_start_matches("0x").to_lowercase();
-        let mut keccak = Keccak256::new();
-        keccak.update(lowers.as_bytes());
-        let hashed = keccak.finalize();
-        assert!(hashed.len() >= lowers.len() / 2);
+        assert_eq!(src.len(), BYTE_SIZE * 2);
 
-        let mut result = String::with_capacity(lowers.len() + 2);
+        let mut keccak = Keccak256::new();
+        keccak.update(src.as_bytes());
+        let hashed = keccak.finalize();
+        assert!(hashed.len() >= src.len() / 2);
+
+        let mut result = String::with_capacity(src.len() + 2);
         result.push_str("0x");
-        lowers.chars().enumerate().for_each(|(i, c)| {
+        src.chars().enumerate().for_each(|(i, c)| {
             let v = hashed[i / 2];
             let p = if i % 2 == 0 { v >> 4 } else { v & 15 };
-            let a = if p < 8 { c } else { c.to_ascii_uppercase() };
+            let a = if p < 8 {
+                c.to_ascii_lowercase()
+            } else {
+                c.to_ascii_uppercase()
+            };
             result.push(a);
         });
         result
@@ -115,7 +120,6 @@ mod test {
         ]
         .into_iter()
         .for_each(|src| {
-            assert_eq!(src, EvmAddress::to_with_checksum(&src.to_lowercase()));
             assert_eq!(src, EvmAddress::to_with_checksum(&src.to_lowercase()[2..]));
 
             let ea: EvmAddress = src.parse().unwrap();
