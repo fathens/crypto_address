@@ -13,9 +13,11 @@ fn run() {
     app.add_plugins(DefaultPlugins);
     app.add_plugin(EguiPlugin);
 
+    app.init_resource::<words::GivenWords>();
     app.add_startup_system(setup);
+    // app.add_startup_system(words::setup);
 
-    app.add_system(words::ui_example);
+    app.add_system(words::action);
 
     app.run();
 }
