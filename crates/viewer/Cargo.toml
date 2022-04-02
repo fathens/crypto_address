@@ -7,6 +7,7 @@ edition = "2021"
 mnemonic = { path = "../mnemonic" }
 
 tinyvec = "~1.5"
+bevy_egui = "0.12"
 
 [dependencies.bevy]
 version = "~0.6"
