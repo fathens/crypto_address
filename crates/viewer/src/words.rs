@@ -86,8 +86,8 @@ pub fn action(mut egui_ctx: ResMut<EguiContext>, mut given_words: ResMut<KeyGene
         ui.separator();
 
         if ui.button("Calculate").clicked() {
-            let words: Vec<_> = given_words.words.split(" ").collect();
-            match mk_key(&words, &given_words.hdpath) {
+            let words: Vec<_> = given_words.words.trim().split(" ").collect();
+            match mk_key(&words, &given_words.hdpath.trim()) {
                 Ok(address) => given_words.address = address.to_string(),
                 Err(err) => {
                     alert(err.to_string().as_str());
