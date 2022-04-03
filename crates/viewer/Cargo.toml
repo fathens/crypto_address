@@ -7,19 +7,15 @@ edition = "2021"
 mnemonic = { path = "../mnemonic" }
 
 tinyvec = "~1.5"
+bevy_egui = "~0.12"
+bytes = "~1.1"
+getrandom = "~0.2"
 
 [dependencies.bevy]
-version = "0.6"
-default-features = false
-features = [
-  "bevy_gltf",
-  "bevy_winit",
-  "render",
-  "png"
-]
+version = "~0.6"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.bevy]
-version = "0.6"
+version = "~0.6"
 default-features = false
 features = ["x11"]
 
