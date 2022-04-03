@@ -3546,7 +3546,10 @@ dependencies = [
  "bevy",
  "bevy_egui",
  "bytes",
+ "evm_address",
+ "extend_key",
  "getrandom",
+ "hdpath",
  "mnemonic",
  "tinyvec",
 ]

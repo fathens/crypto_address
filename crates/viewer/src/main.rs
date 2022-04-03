@@ -13,7 +13,7 @@ fn run() {
     app.add_plugins(DefaultPlugins);
     app.add_plugin(EguiPlugin);
 
-    app.init_resource::<words::GivenWords>();
+    app.init_resource::<words::KeyGeneration>();
     app.add_startup_system(setup);
     // app.add_startup_system(words::setup);
 

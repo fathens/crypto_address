@@ -3,6 +3,12 @@ use hmac::digest::InvalidLength;
 #[derive(Debug)]
 pub struct ExtendError(String);
 
+impl core::fmt::Display for ExtendError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.0.as_str())
+    }
+}
+
 impl ExtendError {
     pub fn invalid_hdpath() -> ExtendError {
         ExtendError("Invalid hdpath".to_owned())
