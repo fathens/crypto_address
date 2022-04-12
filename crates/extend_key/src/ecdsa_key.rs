@@ -72,7 +72,6 @@ impl PubKeyBytes {
     pub fn uncompressed_bytes(&self) -> [u8; KEY_SIZE * 2 + 1] {
         let point = self.to_point();
         let encoded = point.to_encoded_point(false);
-        println!("length of encoded point: {:?}", encoded.len());
         encoded
             .as_bytes()
             .try_into()
